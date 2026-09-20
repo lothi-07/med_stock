@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+import hashlib
+import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -12,14 +14,11 @@ from .models import User
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 
-SECRET_KEY = "medstock-hackathon-secret-key-change-in-prod-2024"
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-this-secret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours for hackathon convenience
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
-import hashlib
-import os
 
 # ── Password Utils ─────────────────────────────────────────────────────────────
 
