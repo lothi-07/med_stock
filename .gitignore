@@ -1,0 +1,54 @@
+# Python virtual environments and caches
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Local databases and database backups
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+*.db-journal
+*.sqlite-wal
+*.sqlite-shm
+*.bak
+
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+**/secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Personal information and private application data
+**/personal_data/
+**/private_data/
+**/private/
+**/user_data/
+**/user_uploads/
+**/uploads/
+**/media/private/
+**/*-private.*
+**/*_private.*
+**/*-personal.*
+**/*_personal.*
+
+# User-uploaded images and documents
+**/uploads/**/*.{png,jpg,jpeg,gif,webp,heic,pdf,doc,docx,xls,xlsx,csv}
+**/user_uploads/**/*.{png,jpg,jpeg,gif,webp,heic,pdf,doc,docx,xls,xlsx,csv}
+
+# Local exports that may contain names, contact details, or transaction data
+**/exports/
+**/exported/
+**/*-export.csv
+**/*_export.csv
+
+# Logs and local tooling files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
