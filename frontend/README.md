@@ -96,19 +96,3 @@ py -m venv .venv
 cd frontend
 npm install
 ```
-
-## Running the Application
-
-Start the backend in one PowerShell window:
-
-```powershell
-cd backend
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
-```
-
-Start the frontend in a second PowerShell window:
-
-```powershell
-cd frontend
-npm run dev -- --host 0.0.0.0 --port 5173
-```
