@@ -66,6 +66,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signup = async (data) => {
+    setLoading(true);
+    try {
+      await authService.signup(data);
+      const userData = await authService.getMe();
+      setUser(userData);
+      return userData;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null);
@@ -84,6 +96,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        signup,
         logout,
         switchDemoUser,
         refreshUser: fetchUser,

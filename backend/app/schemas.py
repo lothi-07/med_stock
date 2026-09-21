@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, date
 
@@ -8,6 +8,20 @@ from datetime import datetime, date
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class OwnerSignup(BaseModel):
+    owner_name: str = Field(min_length=2, max_length=100)
+    email: str = Field(
+        min_length=3,
+        max_length=150,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+    password: str = Field(min_length=8, max_length=128)
+    pharmacy_name: str = Field(min_length=2, max_length=200)
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    license_no: Optional[str] = None
 
 
 class Token(BaseModel):

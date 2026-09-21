@@ -45,6 +45,13 @@ export const authService = {
     }
     return res.data;
   },
+  signup: async (data) => {
+    const res = await api.post('/auth/signup', data);
+    if (res.data.access_token) {
+      localStorage.setItem('medstock_token', res.data.access_token);
+    }
+    return res.data;
+  },
   getMe: async () => {
     const res = await api.get('/auth/me');
     return res.data;

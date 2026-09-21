@@ -4,10 +4,14 @@ import { Pill, ShieldCheck, Sparkles, AlertCircle, ArrowRight, Building2, User }
 import { useAuth, DEMO_ACCOUNTS } from '../context/AuthContext';
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState('demo.owner@medstock.local');
   const [password, setPassword] = useState('DemoOwner@2026');
+  const [ownerName, setOwnerName] = useState('');
+  const [pharmacyName, setPharmacyName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,11 +20,23 @@ export const LoginPage = () => {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      if (isSignup) {
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        await signup({
+          owner_name: ownerName,
+          email,
+          password,
+          pharmacy_name: pharmacyName,
+        });
+      } else {
+        await login(email, password);
+      }
       navigate('/');
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Invalid email or password');
+      setError(err.response?.data?.detail || err.message || 'Unable to continue');
     } finally {
       setLoading(false);
     }
@@ -88,12 +104,16 @@ export const LoginPage = () => {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-500/25 mb-3">
               <Pill className="w-6 h-6 rotate-45" />
             </div>
-            <h2 className="text-xl font-bold text-white">Sign In to MedStock</h2>
-            <p className="text-xs text-slate-400 mt-1">Select a demo role or enter your credentials</p>
+            <h2 className="text-xl font-bold text-white">
+              {isSignup ? 'Create Owner Account' : 'Sign In to MedStock'}
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              {isSignup ? 'Register your pharmacy to get started' : 'Select a demo role or enter your credentials'}
+            </p>
           </div>
 
           {/* Quick Demo Logins */}
-          <div className="mb-6">
+          {!isSignup && <div className="mb-6">
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-center">
               ⚡ Instant Demo Logins
             </div>
@@ -155,13 +175,13 @@ export const LoginPage = () => {
                 <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 transition transform group-hover:translate-x-1" />
               </button>
             </div>
-          </div>
+          </div>}
 
-          <div className="relative flex py-2 items-center">
+          {!isSignup && <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-slate-800"></div>
             <span className="flex-shrink mx-3 text-[11px] uppercase tracking-wider text-slate-500">Or Manual</span>
             <div className="flex-grow border-t border-slate-800"></div>
-          </div>
+          </div>}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5 mt-2">
@@ -170,6 +190,21 @@ export const LoginPage = () => {
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
+            )}
+
+            {isSignup && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Owner Name</label>
+                  <input required minLength={2} value={ownerName} onChange={(e) => setOwnerName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Pharmacy Name</label>
+                  <input required minLength={2} value={pharmacyName} onChange={(e) => setPharmacyName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition" />
+                </div>
+              </>
             )}
 
             <div>
@@ -194,14 +229,27 @@ export const LoginPage = () => {
               />
             </div>
 
+            {isSignup && (
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Confirm Password</label>
+                <input type="password" required minLength={8} value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition" />
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
               className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 transition active:scale-98 disabled:opacity-50"
             >
-              {loading ? 'Authenticating...' : 'Sign In'}
+              {loading ? 'Please wait...' : isSignup ? 'Create Owner Account' : 'Sign In'}
             </button>
           </form>
+          <button type="button" onClick={() => { setIsSignup(!isSignup); setError(''); }}
+            className="w-full mt-4 text-xs text-emerald-400 hover:text-emerald-300 transition">
+            {isSignup ? 'Already have an account? Sign in' : 'New pharmacy owner? Create an account'}
+          </button>
         </div>
       </div>
     </div>

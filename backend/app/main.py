@@ -1,12 +1,12 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from .database import engine, Base, SessionLocal
 from .models import *  # noqa: F401 — Import all models so Base knows about them
 from .seed import seed_data
-from .schemas import UserLogin, Token, UserResponse
-from .auth import verify_password, create_access_token, get_current_user
+from .schemas import OwnerSignup, UserLogin, Token, UserResponse
+from .auth import hash_password, verify_password, create_access_token, get_current_user
 
 from .routes.medicines import router as medicines_router
 from .routes.batches import router as batches_router
@@ -50,7 +50,6 @@ app.add_middleware(
 
 @app.post("/api/auth/login", response_model=Token)
 def login(payload: UserLogin):
-    from .database import get_db
     db = SessionLocal()
     try:
         user = db.query(User).filter(User.email == payload.email).first()
@@ -59,6 +58,55 @@ def login(payload: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid email or password")
         token = create_access_token(data={"sub": user.id, "role": user.role, "org_id": user.org_id})
         return Token(access_token=token)
+    finally:
+        db.close()
+
+
+@app.post("/api/auth/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
+def signup(payload: OwnerSignup):
+    db = SessionLocal()
+    try:
+        email = str(payload.email).lower()
+        if db.query(User).filter(User.email == email).first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An account with this email already exists",
+            )
+
+        organization = Organization(
+            name=payload.pharmacy_name,
+            type="pharmacy",
+            address=payload.address,
+            phone=payload.phone,
+            license_no=payload.license_no,
+        )
+        db.add(organization)
+        db.flush()
+
+        user = User(
+            org_id=organization.id,
+            name=payload.owner_name,
+            email=email,
+            password_hash=hash_password(payload.password),
+            role="owner",
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        token = create_access_token(
+            data={"sub": user.id, "role": user.role, "org_id": user.org_id}
+        )
+        return Token(access_token=token)
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not create the owner account",
+        )
     finally:
         db.close()
 
